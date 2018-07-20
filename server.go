@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -18,6 +19,11 @@ var upgrader = websocket.Upgrader{
 		return true //default true for testing purposes
 	},
 }
+
+const (
+	// Time allowed to read the next pong message from the peer.
+	pongWaitTime = 60 * time.Second
+)
 
 // Player : stores player connection
 type Player struct {
@@ -127,6 +133,9 @@ func (p *Player) inStream() {
 		p.ghub.destroyPlayer(p)
 		p.conn.Close()
 	}()
+
+	//p.conn.SetPongHandler(func(string) error { p.conn.SetReadDeadline(time.Now().Add(pongWaitTime)); return nil })
+
 	for {
 		var data map[string]interface{}
 		err := p.conn.ReadJSON(&data)
